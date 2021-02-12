@@ -13,7 +13,7 @@ typedef struct Student {
 
 int promptInt(std::string message, int min, int max);
 double promptDouble(std::string message, double min, double max);
-void calculateStudentAverage(Student *object, double *avg);
+void calculateStudentAverage(void *object, double *avg);
 
 int main(int argc, char **argv)
 {
@@ -35,24 +35,24 @@ int main(int argc, char **argv)
 	std::cin.clear(); 
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 	
-	student.n_assignments = promptInt("Please enter how many assignments were graded: ", 0, 2147483646); 
+	student.n_assignments = promptInt("Please enter how many assignments were graded: ", 0, 134217728); 
 	
-	std::cout << "\n"; 
+	std::cout << std::endl; 
 	
 	student.grades = (double*)malloc(student.n_assignments * sizeof(double)); 
 	for(int i = 0; i < student.n_assignments; i++) {
 		student.grades[i] = promptDouble("Please enter grade for assignment "+std::to_string(i)+": ", 0, 1000); 
 	}
 	
-	std::cout << "\n"; 
+	std::cout << std::endl; 
 	
 	// Call `CalculateStudentAverage(???, ???)`
 	calculateStudentAverage(&student, &average); 
 	
 	// Output `average`
-	std::cout << "Student: " << student.f_name << " " << student.l_name << " [" << std::to_string(student.id) << "]\n"; 
+	std::cout << "Student: " << student.f_name << " " << student.l_name << " [" << std::to_string(student.id) << "]" << std::endl; 
 	std::cout.precision(1); 
-	std::cout << "\tAverage grade: " << std::fixed << average << "\n"; 
+	std::cout << "\tAverage grade: " << std::fixed << average << std::endl; 
 	
 	return 0;
 }
@@ -68,22 +68,28 @@ int promptInt(std::string message, int min, int max)
 	
 	int result = 0; 
 	bool valid = false; 
+	std::string user_input; 
 	
 	while(!valid)
 	{
 		valid = true; 
 		std::cout << message; 
-		std::cin >> result; 
+		std::cin >> user_input; 
 		
-		//TODO on both int and double, how determine if result contains letters after the num? 
-		//TODO possibly the same issue, got stuck in infinite "try again" on test files. 
-		if(std::cin.fail()) {
-			//std::cout << "Please enter a whole number only.\n"; 
-			std::cout << "Sorry, I cannot understand your answer\n"; 
-			valid = false; 
-		} else if(result < min || max < result) {
-			//std::cout << "Please enter a number between " << min << " and " << max << ".\n"; 
-			std::cout << "Sorry, I cannot understand your answer\n"; 
+		for (int i = 0; i < user_input.length(); i++) {
+			if(!isdigit(user_input[i])) {
+				std::cout << "Sorry, I cannot understand your answer" << std::endl; 
+				valid = false; 
+				break; 
+			}
+		}
+		
+		if(valid) {
+			result = stoi(user_input); 
+		}
+		
+		if(result < min || max < result) {
+			std::cout << "Sorry, I cannot understand your answer" << std::endl; 
 			valid = false; 
 		}
 		
@@ -105,21 +111,29 @@ double promptDouble(std::string message, double min, double max)
 	
 	double result = 0.0; 
 	bool valid = false; 
+	std::string user_input; 
 	
 	while(!valid)
 	{
 		valid = true; 
 		std::cout << message; 
-		std::cin >> result; 
+		std::cin >> user_input; 
 		
-		if(std::cin.fail()) {
-			//std::cout << "Please enter a number only.\n"; 
-			std::cout << "Sorry, I cannot understand your answer\n"; 
-			valid = false; 
-		} else if(result < min || max < result) {
-			//std::cout << "Please enter a number between " << min << " and " << max << ".\n"; 
-			std::cout << "Sorry, I cannot understand your answer\n"; 
-			valid = false; 
+		for (int i = 0; i < user_input.length(); i++) {
+			if(!isdigit(user_input[i]) && !('.' == user_input[i])) {
+				std::cout << "Sorry, I cannot understand your answer" << std::endl; 
+				valid = false; 
+				break; 
+			}
+		}
+		
+		if(valid) {
+			result = stod(user_input); 
+			
+			if(result < min || max < result) {
+				std::cout << "Sorry, I cannot understand your answer" << std::endl; 
+				valid = false; 
+			}
 		}
 		
 		std::cin.clear(); 
@@ -136,15 +150,16 @@ double promptDouble(std::string message, double min, double max)
 	avg: pointer to a double (can store a value here)
 		 pointer to a double meant to contain the average. 
 */
-void calculateStudentAverage(Student *object, double *avg)
+void calculateStudentAverage(void *object, double *avg)
 {
 	// Code to calculate and store average grade
+	Student* student = (Student*)object; 
 	
 	double sum = 0.0; 
 	
-	for(int i = 0; i < object->n_assignments; i++) { 
-		sum += object->grades[i]; 
+	for(int i = 0; i < student->n_assignments; i++) { 
+		sum += student->grades[i]; 
 	}
 	
-	*avg = (sum / object->n_assignments); 
+	*avg = (sum / student->n_assignments); 
 }
